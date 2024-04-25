@@ -1,6 +1,6 @@
 # app/views.py
 from flask import Response, Blueprint, request, make_response
-from .data_storage import GestorTransacciones
+from .data_storage import GestorXML
 from datetime import datetime
 from flask import jsonify
 from xml.etree.ElementTree import Element, SubElement, tostring
@@ -9,7 +9,7 @@ from xml.etree.ElementTree import Element, SubElement, tostring
 bp = Blueprint('api', __name__, url_prefix='/api')
 
 # Crear una instancia de DataStore
-data_store = GestorTransacciones()
+data_store = GestorXML()
 
 @bp.route('/grabarConfiguracion', methods=['POST'])
 def cargar_configuracion():
@@ -64,17 +64,13 @@ def cargar_transaccion():
     # Devolver la respuesta XML directamente con el correcto MIME type
     return Response(respuesta_xml, mimetype='application/xml')
 
-@bp.route('/limpiarDatos', methods=['POST'])
-def limpiar_datos():
-    data_store.limpiarDatos()  # Ahora correcto, usando la instancia data_store
-    respuesta_xml = '''<?xml version="1.0"?>
-<respuesta>
-<mensaje>Los datos han sido eliminados correctamente.</mensaje>
-</respuesta>'''
-
-    response = make_response(respuesta_xml)
-    response.headers['Content-Type'] = 'application/xml'
-    return response
+@bp.route('/limpiarDatos', methods=['GET'])
+def limpiar():
+    try:
+        data_store.limpiarDatos()
+        return make_response(jsonify(message="Datos eliminados correctamente"), 204)
+    except Exception as e:
+        return make_response(jsonify(message="Error al borrar los datos: " + str(e)), 500)
 
 @bp.route('/devolverEstadoCuenta', methods=['GET'])
 def devolver_estado_cuenta():
@@ -116,20 +112,19 @@ def consultar_ingresos():
 
     ingresos = data_store.consultar_ingresos(fecha)  # Pasa la fecha directamente
 
-    # Generar respuesta XML manualmente
-    respuesta_xml = '''<?xml version="1.0"?><ingresos>'''
+    # Generar respuesta JSON
+    respuesta_json = []
     for banco, ingreso in ingresos.items():
-        respuesta_xml += f'''
-<banco>
-<codigo>{banco}</codigo>
-<ingreso>{ingreso}</ingreso>
-</banco>'''
-    respuesta_xml += '''
-</ingresos>'''
+        respuesta_json.append({
+            'banco': {
+                'codigo': banco,
+                'nombre': ingreso['nombre_banco'],
+                'ingreso': ingreso['valor'],
+                'fecha': ingreso['fecha']
+            }
+        })
 
-    response = make_response(respuesta_xml)
-    response.headers['Content-Type'] = 'application/xml'
-    return response
+    return jsonify(respuesta_json)
 
 def validar_fecha_mm_yyyy(fecha):
     try:
