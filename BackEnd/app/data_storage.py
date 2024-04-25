@@ -6,7 +6,7 @@ from xml.etree import ElementTree as ET
 from datetime import datetime, timedelta
 import re
 
-class GestorTransacciones:
+class GestorXML:
     def __init__(self):
         self.clientes = []
         self.bancos = []
@@ -201,7 +201,6 @@ class GestorTransacciones:
         return True
 
     def consultar_ingresos(self, fecha):
-        # Asumimos que 'fecha' es en formato 'mm/yyyy'
         # Convertir la fecha de entrada para obtener el primer día del mes especificado
         mes, año = map(int, fecha.split('/'))
         # Crear un objeto datetime para el primer día del mes dado
@@ -224,13 +223,15 @@ class GestorTransacciones:
 
             # Verificar si el pago está dentro del rango de fechas
             if fecha_inicio <= fecha_pago < fecha:
-                if pago.codigoBanco not in ingresos:
-                    ingresos[pago.codigoBanco] = 0
-                ingresos[pago.codigoBanco] += pago.valor
+                # Buscar el banco correspondiente al pago
+                banco = next((b for b in self.bancos if b.codigo == pago.codigoBanco), None)
+                nombre_banco = banco.nombre if banco else 'Desconocido'
+                if pago.codigoBanco not in ingresos: 
+                    ingresos[pago.codigoBanco] = {'valor': 0, 'nombre_banco': nombre_banco, 'fecha': pago.fecha}
+                ingresos[pago.codigoBanco]['valor'] += pago.valor 
 
         # Convertir los ingresos a miles de quetzales
         for banco in ingresos:
-            ingresos[banco] *= 1000
-
+            ingresos[banco]['valor'] *= 1000
         return ingresos
 
