@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Estado de Ingresos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+    <link href="/static/style.css" rel="stylesheet">
+</head>
+<body>
+    {% include 'navbar.html' %}
+    <div class="container mt-4">
+        <h2>Consultar Ingresos por Fecha</h2>
+        <form id="fechaForm">
+            <div class="mb-3">
+                <label for="fechaInput" class="form-label">Fecha (MM/YYYY):</label>
+                <input type="text" class="form-control" id="fechaInput" name="fecha" placeholder="MM/YYYY" pattern="\d{2}/\d{4}" maxlength="7" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Consultar</button>
+        </form>
+        <canvas id="ingresosChart" width="400" height="200"></canvas>
+    </div>
+
+    <script>
+        document.getElementById('fechaInput').addEventListener('input', function (e) {
+            var input = e.target.value.replace(/[^0-9]/g, '');
+            if (input.length > 2) {
+                input = input.substring(0, 2) + '/' + input.substring(2, 6);
+            }
+            e.target.value = input;
+        });
+
+        document.getElementById('fechaForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const fecha = document.getElementById('fechaInput').value;
+            const fechaLabel = getFormattedDateRange(fecha);
+
+            fetch(`http://localhost:5000/api/consultarIngresos?fecha=${encodeURIComponent(fecha)}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        alert(data.error);
+                    } else {
+                        generarGrafico(data, fechaLabel);
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        });
+
+        function getFormattedDateRange(fecha) {
+            let mesInicio = moment(fecha, "MM/YYYY");
+            let tresMesesAntes = moment(fecha, "MM/YYYY").subtract(2, 'months');
+            return `Ingresos desde ${tresMesesAntes.format('MMMM/YYYY')} hasta ${mesInicio.format('MMMM/YYYY')}`;
+        }
+
+        function generarGrafico(data, fechaLabel) {
+            const ctx = document.getElementById('ingresosChart').getContext('2d');
+            const ingresosDatasets = [];
+            const bankNames = []; // Usado para determinar todos los bancos únicos
+
+            data.forEach(entry => {
+                const banco = entry.banco;
+                if (!bankNames.includes(banco.nombre)) {
+                    bankNames.push(banco.nombre); // Agregar nombre del banco si aún no está en la lista
+                }
+                const monthIndex = bankNames.indexOf(banco.nombre);
+                if (!ingresosDatasets[monthIndex]) {
+                    ingresosDatasets[monthIndex] = {
+                        label: banco.nombre,
+                        data: new Array(bankNames.length).fill(0), // Inicializar con ceros
+                        backgroundColor: generarColores(3), // Generar tres colores
+                        borderColor: 'rgb(0, 0, 0)',
+                        borderWidth: 1
+                    };
+                }
+                ingresosDatasets[monthIndex].data[monthIndex] = banco.ingreso; // Asignar ingreso al mes correcto
+            });
+
+            if (window.barChart) {
+                window.barChart.destroy();
+            }
+
+            window.barChart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: bankNames, // Usar nombres de bancos como etiquetas del eje X
+                    datasets: ingresosDatasets
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Miles de Quetzales' // Etiqueta del eje Y
+                            }
+                        },
+                        x: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: fechaLabel, // Mostrar la fecha como título del gráfico
+                            font: {
+                                size: 16
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(tooltipItems, data) {
+                                    // Asegúrate de que el título del tooltip muestra información útil
+                                    return `${data.datasets[tooltipItems[0].datasetIndex].label}`;
+                                },
+                                label: function(tooltipItem, data) {
+                                    // Accede correctamente a los valores de los ingresos
+                                    var dataset = data.datasets[tooltipItem.datasetIndex];
+                                    var index = tooltipItem.dataIndex;
+                                    var currentValue = dataset.data[index];
+                                    var label = data.labels[index];
+                                    return `${label}: Q${currentValue.toLocaleString()}`; // Asumiendo que los valores son numéricos y necesitas formatearlos
+                                }
+                            }
+                        }
+
+                    }
+                }
+            });
+        }
+
+        function generarColor() {
+            const red = Math.floor(Math.random() * 255);
+            const green = Math.floor(Math.random() * 255);
+            const blue = Math.floor(Math.random() * 255);
+            return `rgba(${red}, ${green}, ${blue}, 0.5)`;
+        }
+
+        function generarColores(count) {
+            const colores = [];
+            for (let i = 0; i < count; i++) {
+                colores.push(generarColor());
+            }
+            return colores;
+        }
+    </script>
+</body>
+</html>
