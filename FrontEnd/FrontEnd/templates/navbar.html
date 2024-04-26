@@ -5,7 +5,8 @@
             <img src="/static/learning.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
             ITGSA
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown" aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
         </button>
         <div class="collapse navbar-collapse" id="navbarNavDropdown">
@@ -19,7 +20,8 @@
                 <li class="nav-item {% if request.resolver_match.url_name == 'grabarTransaccion' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'grabarTransaccion' %}">Cargar Transacciones</a>
                 </li>
-                <li class="nav-item {% if request.resolver_match.url_name == 'devolverEstadoCuenta' %}active{% endif %}">
+                <li
+                    class="nav-item {% if request.resolver_match.url_name == 'devolverEstadoCuenta' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'devolverEstadoCuenta' %}">Consultar Estado de Cuenta</a>
                 </li>
                 <li class="nav-item {% if request.resolver_match.url_name == 'consultarIngresos' %}active{% endif %}">
@@ -28,8 +30,10 @@
                 <li class="nav-item {% if request.resolver_match.url_name == 'limpiarDatos' %}active{% endif %}">
                     <a class="nav-link" href="{% url 'limpiarDatos' %}">Limpiar Datos</a>
                 </li>
-                <li class="nav-item dropdown {% if request.resolver_match.url_name == 'limpiarDatos' or request.resolver_match.url_name == 'informacion' %}active{% endif %}">
-                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <li
+                    class="nav-item dropdown {% if request.resolver_match.url_name == 'limpiarDatos' or request.resolver_match.url_name == 'informacion' %}active{% endif %}">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-bs-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
                         Ayuda
                     </a>
                     <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
@@ -39,4 +43,4 @@
                 </li>
             </ul>
         </div>
-    </nav>
+</nav>
