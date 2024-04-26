@@ -232,6 +232,6 @@ class GestorXML:
 
         # Convertir los ingresos a miles de quetzales
         for banco in ingresos:
-            ingresos[banco]['valor'] *= 1000
+            ingresos[banco]['valor']
         return ingresos
 
