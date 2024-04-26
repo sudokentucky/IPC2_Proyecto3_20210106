@@ -76,19 +76,19 @@ def grabarTransaccion(request):
             return render(request, 'transaccion.html', {'response_xml': 'Error al recibir datos del servidor'})
     else:
         return render(request, 'transaccion.html')
+    
 def limpiarDatos(request):
-    if request.method == 'GET':
-        response = requests.get(f'{FLASK_API_URL}/limpiarDatos')
+    message = ""  # Inicializar el mensaje como vacío
 
+    if request.method == 'POST':
+        response = requests.get(f'{FLASK_API_URL}/limpiarDatos')
         if response.status_code == 200 and response.text:
             xml = minidom.parseString(response.text).toprettyxml()
             message = xml
         else:
             message = 'Error: ' + response.text
 
-        return render(request, 'limpiar.html', {'message': message})
-
-    return render(request, 'limpiar.html')
+    return render(request, 'limpiar.html', {'message': message})
 
 
 def documentacion(request):
@@ -97,37 +97,46 @@ def documentacion(request):
 def devolverEstadoCuenta(request):
     data = []                                                                           
     error = None
-    if request.method == 'GET':
+
+    if request.method == 'POST':
         params = {}
-        if 'NIT' in request.GET and request.GET['NIT']:
-            params['NIT'] = request.GET.get('NIT')
+        if 'NIT' in request.POST and request.POST['NIT']:
+            params['NIT'] = request.POST.get('NIT')
         response = requests.get(f'{FLASK_API_URL}/devolverEstadoCuenta', params=params)
-        xml = ET.fromstring(response.text)
-        for cliente in xml.findall('cliente'):
-            if 'NIT' in params and cliente.find('NIT').text != params['NIT']:
-                continue
-            cliente_data = {
-                'cliente': cliente.find('NIT').text,
-                'nombre': cliente.find('nombre').text,
-                'saldo': cliente.find('saldo').text,
-                'transacciones': [
-                    {
-                        'fecha': transaccion.find('fecha').text,
-                        'cargo': transaccion.find('descripcion').text,
-                        'abono': transaccion.find('valor').text,
-                    }
-                    for transaccion in cliente.findall('transacciones/transaccion')
-                ],
-            }
-            data.append(cliente_data)
-        if not data:
-            error = 'No se encontraron datos para el NIT proporcionado.'
+        
+        if response.status_code == 200:
+            xml = ET.fromstring(response.text)
+            for cliente in xml.findall('cliente'):
+                if 'NIT' in params and cliente.find('NIT').text != params['NIT']:
+                    continue
+                cliente_data = {
+                    'cliente': cliente.find('NIT').text,
+                    'nombre': cliente.find('nombre').text,
+                    'saldo': cliente.find('saldo').text,
+                    'transacciones': [
+                        {
+                            'fecha': transaccion.find('fecha').text,
+                            'cargo': transaccion.find('descripcion').text,
+                            'abono': transaccion.find('valor').text,
+                        }
+                        for transaccion in cliente.findall('transacciones/transaccion')
+                    ],
+                }
+                data.append(cliente_data)
+            if not data:
+                error = 'No se encontraron datos para el NIT proporcionado.'
+        else:
+            error = "Error al obtener los datos: " + response.text
+    else:
+        error = "Escriba un NIT o deje el campo vacío para obtener todos los datos."
+        
     return render(request, 'EstadoCuenta.html', {'response': data, 'error': error})
 
 def consultar_ingresos(request):
     ingresos = []
-    if request.method == 'GET':
-        fecha = request.GET.get('fecha')
+    graph = None
+    if request.method == 'POST':
+        fecha = request.POST.get('fecha')
         if fecha:
             params = {'fecha': fecha}
             response = requests.get(f'{FLASK_API_URL}/consultarIngresos', params=params)
@@ -160,7 +169,10 @@ def generar_grafico(ingresos):
     # Preparación de datos para el gráfico
     bancos = sorted(datos_por_banco.keys())
     fechas = sorted({fecha for datos in datos_por_banco.values() for fecha in datos})
-    data = [ [datos_por_banco[banco][fecha] for fecha in fechas] for banco in bancos ]
+    data = [ [datos_por_banco[banco][fecha] for fecha in fechas] for banco in bancos ] #
+
+    if not fechas:
+        return None # No hay datos para graficar
 
     # Asignación de colores por fecha
     colores = list(mcolors.TABLEAU_COLORS.values())  # Colores predefinidos de Matplotlib
