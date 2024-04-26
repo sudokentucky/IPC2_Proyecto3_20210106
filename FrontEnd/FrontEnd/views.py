@@ -3,6 +3,13 @@ from django.http import HttpResponse
 import requests
 import xml.etree.ElementTree as ET
 from xml.dom.minidom import parseString
+from xml.dom import minidom
+import matplotlib.pyplot as plt
+import matplotlib.colors as mcolors
+from collections import defaultdict
+import numpy as np
+import base64
+from io import BytesIO
 
 # URL base de la API de Flask
 FLASK_API_URL = 'http://localhost:5000/api'
@@ -69,9 +76,20 @@ def grabarTransaccion(request):
             return render(request, 'transaccion.html', {'response_xml': 'Error al recibir datos del servidor'})
     else:
         return render(request, 'transaccion.html')
-    
-def limpiar_datos(request):
+def limpiarDatos(request):
+    if request.method == 'GET':
+        response = requests.get(f'{FLASK_API_URL}/limpiarDatos')
+
+        if response.status_code == 200 and response.text:
+            xml = minidom.parseString(response.text).toprettyxml()
+            message = xml
+        else:
+            message = 'Error: ' + response.text
+
+        return render(request, 'limpiar.html', {'message': message})
+
     return render(request, 'limpiar.html')
+
 
 def documentacion(request):
     return render(request, 'documentacion.html')
@@ -107,4 +125,72 @@ def devolverEstadoCuenta(request):
     return render(request, 'EstadoCuenta.html', {'response': data, 'error': error})
 
 def consultar_ingresos(request):
-        return render(request, 'ingresos.html')
+    ingresos = []
+    if request.method == 'GET':
+        fecha = request.GET.get('fecha')
+        if fecha:
+            params = {'fecha': fecha}
+            response = requests.get(f'{FLASK_API_URL}/consultarIngresos', params=params)
+            if response.status_code == 200:
+                xml = ET.fromstring(response.content)
+                for banco in xml.findall('banco'):
+                    ingreso_data = {
+                        'codigo': banco.find('codigo').text,
+                        'nombre': banco.find('nombre').text,
+                        'valor': banco.find('ingreso').text,
+                        'fecha': banco.find('fecha').text
+                    }
+                    ingresos.append(ingreso_data)
+
+                # Generar el gráfico aquí
+                graph = generar_grafico(ingresos)
+                context = {'graph': graph}
+                return render(request, 'ingresos.html', context)
+            else:
+                return HttpResponse('Error en la solicitud al API de Flask', status=response.status_code)
+
+    return render(request, 'ingresos.html', {'graph': None})
+
+def generar_grafico(ingresos):
+    # Estructura de datos para almacenar los ingresos organizados por banco y fecha
+    datos_por_banco = defaultdict(lambda: defaultdict(float))
+    for ingreso in ingresos:
+        datos_por_banco[ingreso['nombre']][ingreso['fecha']] += float(ingreso['valor'])
+
+    # Preparación de datos para el gráfico
+    bancos = sorted(datos_por_banco.keys())
+    fechas = sorted({fecha for datos in datos_por_banco.values() for fecha in datos})
+    data = [ [datos_por_banco[banco][fecha] for fecha in fechas] for banco in bancos ]
+
+    # Asignación de colores por fecha
+    colores = list(mcolors.TABLEAU_COLORS.values())  # Colores predefinidos de Matplotlib
+    color_map = {fecha: colores[i % len(colores)] for i, fecha in enumerate(fechas)}
+
+    # Configuración del gráfico
+    fig, ax = plt.subplots(figsize=(10, 7))
+    x = np.arange(len(bancos))
+    width = 0.85 / len(fechas)  # Ancho de cada barra
+
+    for i, fecha in enumerate(fechas):
+        ax.bar(x - width/2 + i * width, [datos_por_banco[banco][fecha] for banco in bancos], width, label=fecha, color=color_map[fecha])
+
+    ax.set_xlabel('Bancos')
+    ax.set_ylabel('Miles de Quetzales')
+    ax.set_title('Ingresos por Banco y Fecha')
+    ax.set_xticks(x)
+    ax.set_xticklabels(bancos)
+    ax.legend(title='Fecha de Pago')
+
+    plt.xticks(rotation=45)
+    plt.tight_layout()
+
+    # Guardar el gráfico en un buffer de bytes
+    buffer = BytesIO()
+    plt.savefig(buffer, format='png')
+    buffer.seek(0)
+    image_png = buffer.getvalue()
+    graph = base64.b64encode(image_png)
+    graph = graph.decode('utf-8')
+    buffer.close()
+    
+    return graph
