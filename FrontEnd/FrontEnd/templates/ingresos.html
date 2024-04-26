@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <title>Estado de Ingresos</title>
@@ -11,79 +12,96 @@
 <style>
     .container {
         margin-top: 50px;
-        border : 1px solid #ccc;
+        border: 1px solid #ccc;
         text-align: center;
         padding: 20px;
         border-radius: 5px;
     }
+
     .btn-primary {
         margin-bottom: 20px;
     }
-    </style>
+
+    #download {
+        margin-top: 20px;
+        margin-bottom: 20px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+        border: solid #ccc;
+        border-radius: 5px;
+    }
+</style>
+
 <body>
     {% include 'navbar.html' %}
-    <div  class="container mt-4">
+    <div class="container mt-4">
         <h2>Consultar Ingresos por Fecha</h2>
         <!-- Formulario para enviar la fecha -->
-        <form method="get" action="">
+        <form method="post" action="">
+            {% csrf_token %}
             <div class="mb-3">
                 <label for="fechaInput" class="form-label">Fecha (MM/YYYY):</label>
-                <input type="text" class="form-control" id="fechaInput" name="fecha" placeholder="MM/YYYY" pattern="\d{2}/\d{4}" maxlength="7" required>
+                <input type="text" class="form-control" id="fechaInput" name="fecha" placeholder="MM/YYYY"
+                    pattern="\d{2}/\d{4}" maxlength="7" required>
             </div>
             <button type="submit" class="btn btn-primary">Consultar</button>
         </form>
-    
         <!-- Contenedor para mostrar el gráfico generado por Matplotlib -->
         {% if graph %}
-            <div id="grafica">
-                <h1>Ingresos</h1>
-                <img src="data:image/png;base64,{{ graph }}" alt="Gráfico de Ingresos" style="max-width: 100%; height: auto;">
-            </div>
+        <div id="grafica">
+            <h1>Ingresos</h1>
+            <img src="data:image/png;base64,{{ graph }}" alt="Gráfico de Ingresos"
+                style="max-width: 100%; height: auto;">
+        </div>
         {% else %}
-            <p>No hay datos para mostrar. Por favor, envíe una fecha para consultar los ingresos.</p>
+        <p>Por favor ingrese una fecha, se calcularan los ingresos de los ultimos 3 meses a la fecha.</p>
         {% endif %}
     </div>
     <button id="download">Descargar como PDF</button>
     <script>
-        window.onload = function() {
-        document.getElementById('download').addEventListener('click', function() {
-            const content = document.getElementById('grafica');
-            const { jsPDF } = window.jspdf;
-            html2canvas(content, {
-                scale: 2, // Mejorar calidad de la captura
-                useCORS: true,
-                logging: true
-            }).then(canvas => {
-                var imgData = canvas.toDataURL('image/png');
-                var doc = new jsPDF({
-                    orientation: 'p',
-                    unit: 'pt',
-                    format: 'a4'
+        window.onload = function () {
+            document.getElementById('download').addEventListener('click', function () {
+                const content = document.getElementById('grafica');
+                const {
+                    jsPDF
+                } = window.jspdf;
+                html2canvas(content, {
+                    scale: 2,
+                    useCORS: true,
+                    logging: true
+                }).then(canvas => {
+                    var imgData = canvas.toDataURL('image/png');
+                    var doc = new jsPDF({
+                        orientation: 'p',
+                        unit: 'pt',
+                        format: 'a4'
+                    });
+                    var pdfWidth = doc.internal.pageSize.getWidth();
+                    var pdfHeight = doc.internal.pageSize.getHeight();
+                    var imgWidth = canvas.width;
+                    var imgHeight = canvas.height;
+                    var widthRatio = pdfWidth / imgWidth;
+                    var heightRatio = pdfHeight / imgHeight;
+                    var ratio = Math.min(widthRatio,
+                        heightRatio
+                        ); // Calcular el mejor ratio para ajustar la imagen completamente dentro del PDF
+
+                    var newWidth = imgWidth * ratio;
+                    var newHeight = imgHeight * ratio;
+
+                    var startX = (pdfWidth - newWidth) / 2; // Centrar horizontalmente
+                    var startY = (pdfHeight - newHeight) / 2; // Centrar verticalmente
+
+                    doc.addImage(imgData, 'PNG', startX, startY, newWidth, newHeight);
+                    doc.save('estado-de-cuenta.pdf');
+                }).catch(error => {
+                    console.error('Error al capturar el contenido para PDF:', error);
                 });
-                var pdfWidth = doc.internal.pageSize.getWidth();
-                var pdfHeight = doc.internal.pageSize.getHeight();
-                var imgWidth = canvas.width;
-                var imgHeight = canvas.height;
-                var widthRatio = pdfWidth / imgWidth;
-                var heightRatio = pdfHeight / imgHeight;
-                var ratio = Math.min(widthRatio, heightRatio); // Calcular el mejor ratio para ajustar la imagen completamente dentro del PDF
-    
-                var newWidth = imgWidth * ratio;
-                var newHeight = imgHeight * ratio;
-    
-                var startX = (pdfWidth - newWidth) / 2; // Centrar horizontalmente
-                var startY = (pdfHeight - newHeight) / 2; // Centrar verticalmente
-    
-                doc.addImage(imgData, 'PNG', startX, startY, newWidth, newHeight);
-                doc.save('estado-de-cuenta.pdf');
-            }).catch(error => {
-                console.error('Error al capturar el contenido para PDF:', error);
             });
-        });
-    };
-    
-    
-        </script>
-    
+        };
+    </script>
+
 </body>
+
 </html>
