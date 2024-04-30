@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación del Programa</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/static/style.css" rel="stylesheet">
+    <style>
+        .container {
+            margin-top: 80px;
+            width: 90%;
+            max-width: 1200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .link-card {
+            margin-bottom: 20px;
+        }
+        .card-img-top {
+            height: 100px;  /* Altura fija para las imágenes */
+            object-fit: contain;  /* Escala la imagen para que se ajuste al contenedor */
+        }
+        .card-body {
+            position: relative;
+            z-index: 2;
+        }
+        .card {
+            overflow: hidden; /* Oculta cualquier parte de la imagen que exceda el tamaño del contenedor */
+        }
+    </style>
+</head>
+<body>
+    {% include 'navbar.html' %}
+    
+    <div class="container">
+        <h1 class="mb-4">Documentación del Programa</h1>
+        
+        <div class="row">
+            <!-- Ensayo -->
+            <div class="col-md-4 link-card">
+                <div class="card">
+                    <img src="/static/ensayo.png" class="card-img-top" alt="Ensayo del Proyecto">
+                    <div class="card-body">
+                        <h5 class="card-title">Ensayo del Proyecto</h5>
+                        <p class="card-text">Consulta el ensayo detallado del proyecto que aborda los objetivos y metodologías utilizadas.</p>
+                        <a href="https://github.com/wilard814/IPC2_Proyecto3_20210106/blob/feature/UltimaSemana/Documentacion/Ensayo%20-%20Proyecto%203%20-%20202100106.pdf" class="btn btn-primary" target="_blank">Ver Ensayo</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Diagrama de Clases -->
+            <div class="col-md-4 link-card">
+                <div class="card">
+                    <img src="/static/clases.png" class="card-img-top" alt="Diagrama de Clases">
+                    <div class="card-body">
+                        <h5 class="card-title">Diagrama de Clases</h5>
+                        <p class="card-text">Explora el diagrama de clases para entender la estructura de clases del programa.</p>
+                        <a href="https://github.com/wilard814/IPC2_Proyecto3_20210106/blob/feature/UltimaSemana/Documentacion/Diagrama%20de%20clases%20-%20Proyecto%203.png" class="btn btn-primary" target="_blank">Ver Diagrama de Clases</a>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Diagrama de Entidad-Relación -->
+            <div class="col-md-4 link-card">
+                <div class="card">
+                    <img src="/static/erd.png" class="card-img-top" alt="Diagrama de Entidad-Relación">
+                    <div class="card-body">
+                        <h5 class="card-title">Diagrama de Entidad-Relación</h5>
+                        <p class="card-text">Revisa el diagrama de entidad-relación que muestra cómo se organizan los datos.</p>
+                        <a href="https://github.com/wilard814/IPC2_Proyecto3_20210106/blob/feature/UltimaSemana/Documentacion/Entidad-relacion%20-%20Proyecto%203.png" class="btn btn-primary" target="_blank">Ver Diagrama de Entidad-Relación</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

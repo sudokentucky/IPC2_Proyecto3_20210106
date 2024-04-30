@@ -1,0 +1,86 @@
+/* Estilos personalizados.css */
+
+/* Estilo para el navbar */
+.navbar {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    justify-content: space-between;
+}
+
+.navbar .nav-item.active .nav-link {
+    color: #7e1897; /* Puedes elegir el color que prefieras */
+}
+
+.navbar .navbar-brand {
+    color: #7e1897;
+    font-weight: bold;
+}
+
+.navbar .nav-link {
+    color: #343a40;
+}
+
+.navbar .nav-link:hover {
+    color: #007bff;
+}
+
+/* Estilo para el cuerpo de la página */
+body {
+    background-color: #f8f9fa;
+    color: #343a40;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Estilo para los enlaces */
+a {
+    color: #007bff;
+}
+
+a:hover {
+    color: #0056b3;
+}
+
+.container {
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    max-width: 800px; /* Limita el ancho del contenedor */
+    max-height: 960px; /* Limita el alto del contenedor */
+    border: 1px solid #ddd; /* Agrega un borde */
+    padding: 20px; /* Agrega espacio alrededor del contenido */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Agrega una sombra */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
+.container input {
+    margin: 10px 0; /* Agrega espacio entre los elementos */
+    padding: 10px; /* Agrega espacio dentro del elemento */
+    border: 1px solid #ddd; /* Agrega un borde */
+    border-radius: 4px; /* Agrega esquinas redondeadas */
+    width: 100%; /* Establece el ancho del elemento al 100% */
+    box-sizing: border-box; /* Incluye el borde y el relleno en el ancho total */
+}
+
+input[type="submit"] {
+    display: block;
+    width: 50%;
+    margin: 20px auto;
+    padding: 10px;
+}
+
+#responseXml{
+    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    max-width: 650px; /* Limita el ancho del contenedor */
+    border: 1px solid #ddd; /* Agrega un borde */
+    padding: 20px; /* Agrega espacio alrededor del contenido */
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Agrega una sombra */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+}
+
