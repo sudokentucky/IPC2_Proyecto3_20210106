@@ -163,13 +163,15 @@ def consultar_ingresos(request):
 def generar_grafico(ingresos):
     # Estructura de datos para almacenar los ingresos organizados por banco y fecha
     datos_por_banco = defaultdict(lambda: defaultdict(float))
+    total_por_fecha = defaultdict(float)
     for ingreso in ingresos:
-        datos_por_banco[ingreso['nombre']][ingreso['fecha']] += float(ingreso['valor'])
+        valor = float(ingreso['valor'])
+        datos_por_banco[ingreso['nombre']][ingreso['fecha']] += valor
+        total_por_fecha[ingreso['fecha']] += valor
 
     # Preparación de datos para el gráfico
     bancos = sorted(datos_por_banco.keys())
     fechas = sorted({fecha for datos in datos_por_banco.values() for fecha in datos})
-    data = [ [datos_por_banco[banco][fecha] for fecha in fechas] for banco in bancos ] #
 
     if not fechas:
         return None # No hay datos para graficar
@@ -184,7 +186,7 @@ def generar_grafico(ingresos):
     width = 0.85 / len(fechas)  # Ancho de cada barra
 
     for i, fecha in enumerate(fechas):
-        ax.bar(x - width/2 + i * width, [datos_por_banco[banco][fecha] for banco in bancos], width, label=fecha, color=color_map[fecha])
+        ax.bar(x - width/2 + i * width, [datos_por_banco[banco][fecha] for banco in bancos], width, label=f'{fecha} (Q{total_por_fecha[fecha]:,.2f})', color=color_map[fecha])
 
     ax.set_xlabel('Bancos')
     ax.set_ylabel('Miles de Quetzales')
