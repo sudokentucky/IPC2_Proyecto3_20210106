@@ -68,10 +68,14 @@ def cargar_transaccion():
 def limpiar():
     try:
         data_store.limpiarDatos()
-        return make_response(jsonify(message="Datos eliminados correctamente"), 204)
+        response = '''<?xml version="1.0"?>
+        <message>Los datos han sido borrados exitosamente</message>'''
+        return response
     except Exception as e:
-        return make_response(jsonify(message="Error al borrar los datos: " + str(e)), 500)
-
+        response = '''<?xml version="1.0"?>
+        <message>Ha ocurrido un error al intentar borrar los datos</message>'''
+        return response
+    
 @bp.route('/devolverEstadoCuenta', methods=['GET'])
 def devolver_estado_cuenta():
     NIT = request.args.get('NIT')
@@ -104,27 +108,33 @@ def devolver_estado_cuenta():
     response.headers['Content-Type'] = 'application/xml'
     return response
 
+from flask import make_response
+
 @bp.route('/consultarIngresos', methods=['GET'])
 def consultar_ingresos():
     fecha = request.args.get('fecha')  # Obtiene la fecha como una cadena 'mm/yyyy'
     if not validar_fecha_mm_yyyy(fecha):
-        return jsonify({"error": "Formato de fecha incorrecto. Utilice el formato MM/YYYY"}), 400
+        response = make_response('<error>Formato de fecha incorrecto. Utilice el formato MM/YYYY</error>', 400)
+        response.headers['Content-Type'] = 'application/xml'
+        return response
 
     ingresos = data_store.consultar_ingresos(fecha)  # Pasa la fecha directamente
 
-    # Generar respuesta JSON
-    respuesta_json = []
+    # Generar respuesta XML
+    respuesta_xml = '<bancos>'
     for banco, ingreso in ingresos.items():
-        respuesta_json.append({
-            'banco': {
-                'codigo': banco,
-                'nombre': ingreso['nombre_banco'],
-                'ingreso': ingreso['valor'],
-                'fecha': ingreso['fecha']
-            }
-        })
+        respuesta_xml += f'''
+        <banco>
+            <codigo>{banco}</codigo>
+            <nombre>{ingreso['nombre_banco']}</nombre>
+            <ingreso>{ingreso['valor']}</ingreso>
+            <fecha>{ingreso['fecha']}</fecha>
+        </banco>'''
+    respuesta_xml += '</bancos>'
 
-    return jsonify(respuesta_json)
+    response = make_response(respuesta_xml)
+    response.headers['Content-Type'] = 'application/xml'
+    return response
 
 def validar_fecha_mm_yyyy(fecha):
     try:

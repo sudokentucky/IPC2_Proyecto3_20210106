@@ -22,7 +22,7 @@ class GestorXML:
         for elem in root.findall('./clientes/cliente'):
             NIT, nombre = elem.find('NIT').text, elem.find('nombre').text
             # Extraer solo el valor alfanumérico del NIT, ignorando "NIT:", "nit:", "NIT=" y "nit=" si están presentes
-            NIT = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+-[A-Za-z0-9]+)\b', NIT)
+            NIT = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NIT)
             if NIT:
                 NIT = NIT.group(1)  # Usar el grupo 1 para obtener solo el NIT, sin "NIT:", "nit:", "NIT=" o "nit="
             else:
@@ -54,7 +54,7 @@ class GestorXML:
             valor = elem.find('valor').text
 
             # Extraer solo el valor alfanumérico del NIT, ignorando "NIT:", "nit:", "NIT=" y "nit=" si están presentes
-            NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+-[A-Za-z0-9]+)\b', NITcliente)
+            NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NITcliente)
             numeroFactura = re.search(r'\b[A-Za-z0-9]+\b', numeroFactura)
             fecha = re.search(r'\b\d{2}[/-]\d{2}[/-]\d{4}\b', fecha)
             valor = re.search(r'\b\d+(\.\d+)?\b', valor)
@@ -86,7 +86,7 @@ class GestorXML:
             valor = elem.find('valor').text
 
             # Extraer solo el valor alfanumérico del NIT, ignorando "NIT:", "nit:", "NIT=" y "nit=" si están presentes
-            NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+-[A-Za-z0-9]+)\b', NITcliente)
+            NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NITcliente)
             fecha = re.search(r'\b\d{2}[/-]\d{2}[/-]\d{4}\b', fecha)
             valor = re.search(r'\b(?:Q\.)?(\d+(\.\d+)?)(?:\s*quetzales)?\b', valor, re.IGNORECASE)
 
@@ -232,6 +232,6 @@ class GestorXML:
 
         # Convertir los ingresos a miles de quetzales
         for banco in ingresos:
-            ingresos[banco]['valor'] *= 1000
+            ingresos[banco]['valor']
         return ingresos
 

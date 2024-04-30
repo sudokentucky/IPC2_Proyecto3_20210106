@@ -1,0 +1,94 @@
+.navbar {
+    background-color: #f8f9fa;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    justify-content: space-between;
+}
+
+.navbar .nav-item.active .nav-link {
+    color: #7e1897; /* Puedes elegir el color que prefieras */
+}
+
+.navbar .navbar-brand {
+    color: #7e1897;
+    font-weight: bold;
+}
+
+.navbar .nav-link {
+    color: #343a40;
+}
+
+.navbar .nav-link:hover {
+    color: #007bff;
+}
+
+body {
+    background-color: #f8f9fa;
+    color: #343a40;
+    justify-content: center;
+    align-items: center;
+}
+
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    text-align: center;
+}
+
+th, td {
+    border: 1px solid #ddd;
+    padding: 8px;
+}
+
+th {
+    background-color: #4CAF50;
+    color: white;
+    font-weight: bold; /* Add this line to make the table header text bold */
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:hover {
+    background-color: #e9e9e9; /* Add this line to change the background color on hover */
+}
+
+td {
+    font-size: 14px; /* Add this line to change the font size of the table cells */
+}
+
+h2, h3 {
+    font-weight: 300;
+    line-height: 1.2;
+    text-align: center;
+    margin-top: 1.5rem; /* Add this line to create separation between titles */
+    margin-bottom: 1rem; /* Add this line to create separation between titles */
+    color: #343a40; /* Add this line to change the color of the titles */
+}
+h1 {
+    font-size: 2.25rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #343a40; /* Add this line to change the color of the title */
+    font-weight: bold; /* Add this line to make the title bold */
+}
+
+form {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 20px 0;
+    flex-direction: column;
+    gap: 10px;
+    width: 300px;
+    padding: 20px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 1.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 0 auto; /* Add this line to center the form horizontally */
+}
+

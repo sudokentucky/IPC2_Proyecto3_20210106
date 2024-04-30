@@ -1,0 +1,46 @@
+<!-- navbar.html -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <img src="/static/learning.svg" alt="" width="30" height="24" class="d-inline-block align-text-top">
+            ITGSA
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavDropdown"
+            aria-controls="navbarNavDropdown" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNavDropdown">
+            <ul class="navbar-nav">
+                <li class="nav-item {% if request.resolver_match.url_name == 'home' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'home' %}">Home</a>
+                </li>
+                <li class="nav-item {% if request.resolver_match.url_name == 'grabarConfiguracion' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'grabarConfiguracion' %}">Cargar Configuración</a>
+                </li>
+                <li class="nav-item {% if request.resolver_match.url_name == 'grabarTransaccion' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'grabarTransaccion' %}">Cargar Transacciones</a>
+                </li>
+                <li
+                    class="nav-item {% if request.resolver_match.url_name == 'devolverEstadoCuenta' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'devolverEstadoCuenta' %}">Consultar Estado de Cuenta</a>
+                </li>
+                <li class="nav-item {% if request.resolver_match.url_name == 'consultarIngresos' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'consultarIngresos' %}">Consultar Ingresos</a>
+                </li>
+                <li class="nav-item {% if request.resolver_match.url_name == 'limpiarDatos' %}active{% endif %}">
+                    <a class="nav-link" href="{% url 'limpiarDatos' %}">Limpiar Datos</a>
+                </li>
+                <li
+                    class="nav-item dropdown {% if request.resolver_match.url_name == 'Información' or request.resolver_match.url_name == 'informacion' %}active{% endif %}">
+                    <a class="nav-link dropdown-toggle" href="#" id="navbarDropdownMenuLink" data-bs-toggle="dropdown"
+                        aria-haspopup="true" aria-expanded="false">
+                        Ayuda
+                    </a>
+                    <div class="dropdown-menu" aria-labelledby="navbarDropdownMenuLink">
+                        <a class="dropdown-item" href="{% url 'documentacion' %}">Documentacion del Programa</a>
+                        <a class="dropdown-item" href="{% url 'informacion' %}">Información del Estudiante</a>
+                    </div>
+                </li>
+            </ul>
+        </div>
+</nav>
