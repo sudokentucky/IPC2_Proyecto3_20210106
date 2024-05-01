@@ -20,20 +20,19 @@ class GestorXML:
         creados_bancos, actualizados_bancos = 0, 0
 
         for elem in root.findall('./clientes/cliente'):
-            NIT, nombre = elem.find('NIT').text, elem.find('nombre').text
-            # Extraer solo el valor alfanumérico del NIT, ignorando "NIT:", "nit:", "NIT=" y "nit=" si están presentes
-            NIT = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NIT)
-            if NIT:
-                NIT = NIT.group(1)  # Usar el grupo 1 para obtener solo el NIT, sin "NIT:", "nit:", "NIT=" o "nit="
-            else:
-                continue  # Si no se encuentra un NIT válido, saltar a la siguiente iteración
-            if self.agregar_cliente(NIT, nombre):
-                creados_clientes += 1
-            else:
-                actualizados_clientes += 1
+            NIT_text = elem.find('NIT').text
+            nombre = elem.find('nombre').text
+            match = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NIT_text)
+            if match:
+                NIT = match.group(1)
+                if self.agregar_cliente(NIT, nombre):
+                    creados_clientes += 1
+                else:
+                    actualizados_clientes += 1
 
         for elem in root.findall('./bancos/banco'):
-            codigo, nombre = elem.find('codigo').text, elem.find('nombre').text
+            codigo = elem.find('codigo').text
+            nombre = elem.find('nombre').text
             if self.agregar_banco(codigo, nombre):
                 creados_bancos += 1
             else:
@@ -41,103 +40,79 @@ class GestorXML:
 
         return creados_clientes, actualizados_clientes, creados_bancos, actualizados_bancos
 
+    def agregar_cliente(self, NIT, nombre):
+        for cliente in self.clientes:
+            if cliente.NIT == NIT:
+                if cliente.nombre != nombre:
+                    cliente.nombre = nombre
+                    return False  # Cliente actualizado
+                return False  # No hay necesidad de actualizar
+        self.clientes.append(Cliente(NIT, nombre))
+        return True  # Nuevo cliente añadido
+
+    def agregar_banco(self, codigo, nombre):
+        for banco in self.bancos:
+            if banco.codigo == codigo:
+                if banco.nombre != nombre:
+                    banco.nombre = nombre
+                    return False  # Banco actualizado
+                return False  # No hay necesidad de actualizar
+        self.bancos.append(Banco(codigo, nombre))
+        return True  # Nuevo banco añadido
+    
     def cargar_transacciones(self, archivo_xml):
-        pagos_unicos = set() # Conjunto para almacenar pagos únicos y evitar duplicados
         root = ET.fromstring(archivo_xml)
         nuevas_facturas, facturas_duplicadas, facturas_con_error = 0, 0, 0
         nuevos_pagos, pagos_duplicados, pagos_con_error = 0, 0, 0
 
         for elem in root.findall('./facturas/factura'):
-            numeroFactura = elem.find('numeroFactura').text
-            NITcliente = elem.find('NITcliente').text
-            fecha = elem.find('fecha').text
-            valor = elem.find('valor').text
+            numeroFactura_text = elem.find('numeroFactura').text
+            NITcliente_text = elem.find('NITcliente').text
+            fecha_text = elem.find('fecha').text
+            valor_text = elem.find('valor').text
 
-            # Extraer solo el valor alfanumérico del NIT, ignorando "NIT:", "nit:", "NIT=" y "nit=" si están presentes
-            NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NITcliente)
-            numeroFactura = re.search(r'\b[A-Za-z0-9]+\b', numeroFactura)
-            fecha = re.search(r'\b\d{2}[/-]\d{2}[/-]\d{4}\b', fecha)
-            valor = re.search(r'\b\d+(\.\d+)?\b', valor)
+            numeroFactura = re.search(r'\b[A-Za-z0-9-]+\b', numeroFactura_text)
+            NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NITcliente_text)
+            fecha = re.search(r'(\d{2}[/-]\d{2}[/-]\d{4})', fecha_text)
+            valor = re.search(r'\b\d+(\.\d+)?\b', valor_text)
 
-            #verificar si hay facturas duplicadas, con error y nuevas
             if NITcliente and numeroFactura and fecha and valor:
                 NITcliente = NITcliente.group(1)
                 numeroFactura = numeroFactura.group(0)
                 fecha = fecha.group(0)
                 valor = float(valor.group(0))
 
-                # Crear una tupla con los campos únicos de la factura
-                factura_unico = (numeroFactura, NITcliente, fecha)
-
-                # Verificar si la factura ya está en el set de facturas únicas
-                if factura_unico in pagos_unicos:
-                    facturas_duplicadas += 1
+                if self.agregar_factura(numeroFactura, NITcliente, fecha, valor):
+                    nuevas_facturas += 1
                 else:
-                    pagos_unicos.add(factura_unico)
-                    if self.agregar_factura(numeroFactura, NITcliente, fecha, valor):
-                        nuevas_facturas += 1
+                    facturas_duplicadas += 1
             else:
                 facturas_con_error += 1
 
         for elem in root.findall('./pagos/pago'):
             codigoBanco = elem.find('codigoBanco').text
-            fecha = elem.find('fecha').text
+            fecha_text = elem.find('fecha').text
             NITcliente = elem.find('NITcliente').text
             valor = elem.find('valor').text
 
-            # Extraer solo el valor alfanumérico del NIT, ignorando "NIT:", "nit:", "NIT=" y "nit=" si están presentes
             NITcliente = re.search(r'\b(?:NIT:|nit:|NIT=|nit=)?([A-Za-z0-9]+(-[A-Za-z0-9]+)?)\b', NITcliente)
-            fecha = re.search(r'\b\d{2}[/-]\d{2}[/-]\d{4}\b', fecha)
+            fecha = re.search(r'(\d{2}[/-]\d{2}[/-]\d{4})', fecha_text)
             valor = re.search(r'\b(?:Q\.)?(\d+(\.\d+)?)(?:\s*quetzales)?\b', valor, re.IGNORECASE)
 
             if NITcliente and fecha and valor:
                 NITcliente = NITcliente.group(1)
-                fecha = fecha.group(0)
+                fecha = fecha.group(0)  # Asegurarse de extraer solo la fecha
                 valor = float(valor.group(1))
 
-                # Crear una tupla con los campos únicos del pago
-                pago_unico = (codigoBanco, NITcliente, fecha)
-
-                # Verificar si el pago ya está en el set de pagos únicos
-                if pago_unico in pagos_unicos:
-                    pagos_duplicados += 1
+                if self.agregar_pago(codigoBanco, fecha, NITcliente, valor):
+                    nuevos_pagos += 1
                 else:
-                    pagos_unicos.add(pago_unico)
-                    if self.agregar_pago(codigoBanco, fecha, NITcliente, valor):
-                        nuevos_pagos += 1
+                    pagos_duplicados += 1
             else:
                 pagos_con_error += 1
 
         return nuevas_facturas, facturas_duplicadas, facturas_con_error, nuevos_pagos, pagos_duplicados, pagos_con_error
 
-    def agregar_cliente(self, NIT, nombre):
-        for cliente in self.clientes:
-            if cliente.NIT == NIT:
-                if cliente.nombre != nombre:
-                    cliente.nombre = nombre
-                    return False  # Retornar False indica que fue una actualización
-                return False  # Ningún cambio necesario, pero el NIT ya existía
-        nuevo_cliente = Cliente(NIT, nombre)
-        self.clientes.append(nuevo_cliente)
-        # imprimir listas
-        for cliente in self.clientes:
-            print(cliente.NIT)
-            print(cliente.nombre)
-        for banco in self.bancos:
-            print(banco.codigo)
-            print(banco.nombre)
-            print("________________________")
-        return True  # Verdadero indica que se creó un nuevo cliente
-
-
-    def agregar_banco(self, codigo, nombre):
-        # Agregar o actualizar banco
-        for banco in self.bancos:
-            if banco.codigo == codigo:
-                banco.nombre = nombre
-                return False
-        self.bancos.append(Banco(codigo, nombre))
-        return True
     
     def limpiarDatos(self):
         # Limpiar datos
@@ -188,6 +163,7 @@ class GestorXML:
         # Agregar factura si no existe
         for factura in self.facturas:
             if factura.numeroFactura == numeroFactura:
+                print(f"Factura duplicada: {numeroFactura}")
                 return False  # Ya existe
         self.facturas.append(Factura(numeroFactura, NITcliente, fecha, valor))
         return True
